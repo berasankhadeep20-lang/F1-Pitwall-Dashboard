@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // Replace 'f1-pitwall-dashboard' with your actual GitHub repo name
 export default defineConfig({
   plugins: [react()],
-  base: '/F1-Pitwall-Dashboard/',
+  base: '/f1-pitwall-dashboard/',
   build: {
     chunkSizeWarningLimit: 600,
     rollupOptions: {
