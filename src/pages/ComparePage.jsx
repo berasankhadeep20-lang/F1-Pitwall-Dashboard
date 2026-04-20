@@ -2,6 +2,7 @@ import React from 'react';
 import RaceSelector from '../components/RaceSelector';
 import DriverCompare from '../components/DriverCompare';
 import TyreStrategy from '../components/TyreStrategy';
+import QualifyingResults from '../components/QualifyingResults';
 
 export default function ComparePage() {
   return (
@@ -9,6 +10,7 @@ export default function ComparePage() {
       <RaceSelector />
       <DriverCompare />
       <TyreStrategy />
+      <QualifyingResults />
     </div>
   );
 }

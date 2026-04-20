@@ -284,3 +284,57 @@ export async function resolveRound(season, round) {
   const data = await fetchWithCache(`${JOLPICA_BASE}/${season}/last/results.json`);
   return parseInt(data?.MRData?.RaceTable?.Races?.[0]?.round ?? 1);
 }
+
+// ───────────────────────────────────────────────
+// Qualifying results
+// ───────────────────────────────────────────────
+export async function getQualifyingResults(season = 'current', round = 'last') {
+  try {
+    const data = await fetchWithCache(`${JOLPICA_BASE}/${season}/${round}/qualifying.json`);
+    return data?.MRData?.RaceTable?.Races?.[0] ?? null;
+  } catch { return null; }
+}
+
+// ───────────────────────────────────────────────
+// Driver career stats
+// ───────────────────────────────────────────────
+export async function getDriverCareerStats(driverId) {
+  try {
+    const [results, standings] = await Promise.all([
+      fetchWithCache(`${JOLPICA_BASE}/drivers/${driverId}/results.json?limit=1`, 3_600_000),
+      fetchWithCache(`${JOLPICA_BASE}/drivers/${driverId}/driverStandings.json?limit=100`, 3_600_000),
+    ]);
+    const total = parseInt(results?.MRData?.total ?? 0);
+    const allStandings = standings?.MRData?.StandingsTable?.StandingsLists ?? [];
+    const totalWins = allStandings.reduce((a, s) => a + parseInt(s.DriverStandings?.[0]?.wins ?? 0), 0);
+    const championships = allStandings.filter(s => s.DriverStandings?.[0]?.position === '1').length;
+    return { races: total, wins: totalWins, championships };
+  } catch { return null; }
+}
+
+// ───────────────────────────────────────────────
+// DNF / reliability tracker for a season
+// ───────────────────────────────────────────────
+export async function getReliabilityStats(season = 'current') {
+  const races = await getRaceSchedule(season);
+  const completed = races.filter(r => new Date(r.date) < new Date());
+  const dnfMap = {};
+  const retirementReasons = {};
+
+  for (const race of completed.slice(-10)) { // last 10 races to stay within rate limit
+    try {
+      const data = await fetchWithCache(`${JOLPICA_BASE}/${season}/${race.round}/results.json`, 300_000);
+      const results = data?.MRData?.RaceTable?.Races?.[0]?.Results ?? [];
+      results.forEach(r => {
+        if (r.status && r.status !== 'Finished' && !r.status.startsWith('+')) {
+          const team = r.Constructor?.name ?? 'Unknown';
+          const driver = r.Driver?.code ?? r.Driver?.familyName;
+          dnfMap[team] = (dnfMap[team] || 0) + 1;
+          if (!retirementReasons[driver]) retirementReasons[driver] = [];
+          retirementReasons[driver].push({ race: race.raceName, reason: r.status });
+        }
+      });
+    } catch { /* skip */ }
+  }
+  return { dnfMap, retirementReasons };
+}

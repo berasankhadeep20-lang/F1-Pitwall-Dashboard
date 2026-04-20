@@ -5,6 +5,7 @@ import DriverStandings from '../components/DriverStandings';
 import ConstructorStandings from '../components/ConstructorStandings';
 import RaceResults from '../components/RaceResults';
 import ChampionshipChart from '../components/ChampionshipChart';
+import PointsGap from '../components/PointsGap';
 import PositionChart from '../components/PositionChart';
 
 export default function Dashboard() {
@@ -12,17 +13,14 @@ export default function Dashboard() {
     <div className="space-y-4">
       <StatsBar />
       <RaceSelector />
-
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="xl:col-span-2">
-          <RaceResults />
-        </div>
-        <div>
-          <ConstructorStandings />
-        </div>
+        <div className="xl:col-span-2"><RaceResults /></div>
+        <div><ConstructorStandings /></div>
       </div>
-
-      <ChampionshipChart />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <ChampionshipChart />
+        <PointsGap />
+      </div>
       <PositionChart />
       <DriverStandings />
     </div>
