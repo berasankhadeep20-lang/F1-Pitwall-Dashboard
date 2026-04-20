@@ -12,14 +12,11 @@ const TABS = [
 
 export default function Navbar({ lastUpdated }) {
   const { username, setUsername, season, setSeason, activeTab, setActiveTab } = useApp();
-  const [seasons, setSeasons] = useState(['current', '2025', '2024', '2023', '2022']);
+  const currentYear = new Date().getFullYear();
+  const [seasons, setSeasons] = useState(['current', ...getSeasonsList().filter(y => y !== currentYear.toString())]);
   const [now, setNow] = useState(new Date());
-  const currentYear = new Date().getFullYear().toString(); // 2026
 
   useEffect(() => {
-    getSeasonsList()
-      .then(s => setSeasons(['current', ...s.filter(x => x !== currentYear)]))
-      .catch(() => {});
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);

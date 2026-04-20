@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getLastRaceResults, getSprintResults, getFastestLaps, getTeamColor, parseLapTime } from '../utils/api';
+import { getLastRaceResults, getRaceResults, getSprintResults, getFastestLaps, getTeamColor, parseLapTime } from '../utils/api';
 import { useApp } from '../context/AppContext';
 import { useMultiF1Data } from '../hooks/useF1Data';
 import { LoadingCard, ErrorCard, SectionHeader } from './LoadingCard';
@@ -16,7 +16,7 @@ export default function RaceResults({ season, round = 'last' }) {
   const [showSprint, setShowSprint] = useState(false);
 
   const { data, loading, error } = useMultiF1Data({
-    race: () => getLastRaceResults(),
+    race: () => getLastRaceResults(usedSeason),
     fastest: () => getFastestLaps(usedSeason, round),
     sprint: () => getSprintResults(usedSeason, round),
   }, [usedSeason, round], 60_000);

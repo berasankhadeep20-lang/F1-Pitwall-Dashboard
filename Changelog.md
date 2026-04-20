@@ -1,3 +1,11 @@
+
+## [1.2.0] — 2026-04-20
+
+### Fixed
+- **404 errors on GitHub Pages** — `vite.config.js` now reads the base path from `VITE_BASE_PATH` env variable; the GitHub Actions workflow injects this automatically from `github.event.repository.name`, so asset paths are always correct regardless of repo name
+- **Championship chart showing only odd rounds** — removed `i % 2 === 0` sampling filter in `getStandingsProgression`; every completed round is now fetched and plotted
+- README updated with correct GitHub username (`berasankhadeep20-lang`)
+
 # Changelog
 
 All notable changes to F1 Pitwall Dashboard are documented here.  

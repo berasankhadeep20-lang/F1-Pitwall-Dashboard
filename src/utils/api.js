@@ -55,8 +55,8 @@ export async function getRaceResults(season = 'current', round = 'last') {
 // ───────────────────────────────────────────────
 // Last race results
 // ───────────────────────────────────────────────
-export async function getLastRaceResults() {
-  return getRaceResults('current', 'last');
+export async function getLastRaceResults(season = 'current') {
+  return getRaceResults(season, 'last');
 }
 
 // ───────────────────────────────────────────────
@@ -112,12 +112,10 @@ export async function getStandingsProgression(season = 'current') {
   const races = await getRaceSchedule(season);
   const completedRaces = races.filter(r => new Date(r.date) < new Date());
 
-  // Fetch standings after each round (sample every 3 rounds to avoid rate limits)
+  // Fetch standings after every completed round (results are cached 5 min so no rate limit concern)
   const progression = [];
-  const rounds = completedRaces.slice(0, completedRaces.length);
-  const sampleRounds = rounds.filter((_, i) => i % 2 === 0 || i === rounds.length - 1);
 
-  for (const race of sampleRounds) {
+  for (const race of completedRaces) {
     try {
       const data = await fetchWithCache(
         `${JOLPICA_BASE}/${race.season}/${race.round}/driverStandings.json`,
@@ -143,17 +141,11 @@ export async function getStandingsProgression(season = 'current') {
 // ───────────────────────────────────────────────
 // All seasons list
 // ───────────────────────────────────────────────
-export async function getSeasonsList() {
-  const data = await fetchWithCache(`${JOLPICA_BASE}/seasons.json?limit=10&offset=65`, 3_600_000);
-  const fromApi = (data?.MRData?.SeasonTable?.Seasons ?? [])
-    .map(s => s.season)
-    .reverse()
-    .slice(0, 8);
-
-  // Ensure current year is always included even if API is behind
-  const currentYear = new Date().getFullYear().toString();
-  if (!fromApi.includes(currentYear)) fromApi.unshift(currentYear);
-  return fromApi;
+export function getSeasonsList() {
+  // Build last 6 seasons dynamically — no API call needed
+  const currentYear = new Date().getFullYear();
+  return Array.from({ length: 6 }, (_, i) => (currentYear - i).toString());
+  // e.g. ['2026', '2025', '2024', '2023', '2022', '2021']
 }
 
 // ───────────────────────────────────────────────

@@ -19,7 +19,7 @@ export default function StatsBar() {
   const { season } = useApp();
   const { data, loading } = useMultiF1Data({
     standings: () => getDriverStandings(season),
-    race: () => getLastRaceResults(),
+    race: () => getLastRaceResults(season),
     fastest: () => getFastestLaps(season, 'last'),
   }, [season], 30_000);
 
