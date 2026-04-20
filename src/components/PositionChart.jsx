@@ -36,13 +36,14 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function PositionChart() {
-  const { season } = useApp();
+  const { season, selectedRound } = useApp();
+  const round = selectedRound ?? 'last';
   const [selectedDrivers, setSelectedDrivers] = useState([]);
 
   const { data, loading, error } = useMultiF1Data({
-    laps: () => getLapTimes(season, 'last'),
-    race: () => getLastRaceResults(),
-  }, [season], 120_000);
+    laps: () => getLapTimes(season, round),
+    race: () => getRaceResults(season, round),
+  }, [season, round], 120_000);
 
   const { chartData, drivers } = useMemo(() => {
     if (!data.laps?.length || !data.race) return { chartData: [], drivers: [] };

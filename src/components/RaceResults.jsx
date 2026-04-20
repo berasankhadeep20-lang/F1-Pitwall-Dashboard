@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getLastRaceResults, getRaceResults, getSprintResults, getFastestLaps, getTeamColor, parseLapTime } from '../utils/api';
+import { getRaceResults, getSprintResults, getFastestLaps, getTeamColor, parseLapTime } from '../utils/api';
 import { useApp } from '../context/AppContext';
 import { useMultiF1Data } from '../hooks/useF1Data';
 import { LoadingCard, ErrorCard, SectionHeader } from './LoadingCard';
@@ -10,16 +10,17 @@ function TimeDiff({ time, status }) {
   return <span className="number-font text-xs text-f1muted">{time}</span>;
 }
 
-export default function RaceResults({ season, round = 'last' }) {
-  const { season: ctxSeason } = useApp();
+export default function RaceResults({ season, round }) {
+  const { season: ctxSeason, selectedRound } = useApp();
   const usedSeason = season || ctxSeason;
+  const usedRound = round ?? selectedRound ?? 'last';
   const [showSprint, setShowSprint] = useState(false);
 
   const { data, loading, error } = useMultiF1Data({
-    race: () => getLastRaceResults(usedSeason),
-    fastest: () => getFastestLaps(usedSeason, round),
-    sprint: () => getSprintResults(usedSeason, round),
-  }, [usedSeason, round], 60_000);
+    race: () => getRaceResults(usedSeason, usedRound),
+    fastest: () => getFastestLaps(usedSeason, usedRound),
+    sprint: () => getSprintResults(usedSeason, usedRound),
+  }, [usedSeason, usedRound], 60_000);
 
   if (loading) return <LoadingCard rows={10} />;
   if (error || !data.race) return <ErrorCard message={error || 'No race data'} />;

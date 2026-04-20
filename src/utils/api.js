@@ -213,3 +213,74 @@ export function formatLapTime(seconds) {
   const secs = (seconds % 60).toFixed(3);
   return `${mins}:${secs.padStart(6, '0')}`;
 }
+
+// ───────────────────────────────────────────────
+// Tyre stints via OpenF1 API
+// Returns array of stints per driver for a given session
+// ───────────────────────────────────────────────
+export async function getTyreStints(year, roundNumber) {
+  try {
+    // First get the session key for the race session of this round
+    const sessionsUrl = `${OPENF1_BASE}/sessions?year=${year}&session_name=Race&round_number=${roundNumber}`;
+    const sessions = await fetchWithCache(sessionsUrl, 300_000);
+    if (!sessions?.length) return null;
+
+    const sessionKey = sessions[0].session_key;
+    const totalLaps = sessions[0].total_laps || 70;
+
+    // Fetch all stints for this session
+    const stintsUrl = `${OPENF1_BASE}/stints?session_key=${sessionKey}`;
+    const stints = await fetchWithCache(stintsUrl, 300_000);
+    if (!stints?.length) return null;
+
+    // Fetch drivers for this session to get names/numbers
+    const driversUrl = `${OPENF1_BASE}/drivers?session_key=${sessionKey}`;
+    const drivers = await fetchWithCache(driversUrl, 300_000);
+
+    // Build driver map: number → info
+    const driverMap = {};
+    (drivers ?? []).forEach(d => {
+      driverMap[d.driver_number] = {
+        code: d.name_acronym || String(d.driver_number),
+        fullName: d.full_name || d.name_acronym,
+        teamColor: '#' + (d.team_colour || '888888'),
+      };
+    });
+
+    // Group stints by driver number
+    const byDriver = {};
+    stints.forEach(s => {
+      const num = s.driver_number;
+      if (!byDriver[num]) byDriver[num] = [];
+      byDriver[num].push({
+        compound: s.tyre_compound || 'UNKNOWN',
+        lapStart: s.lap_start,
+        lapEnd: s.lap_end || totalLaps,
+        tyreAgeAtStart: s.tyre_age_at_start || 0,
+        stint: s.stint_number,
+      });
+    });
+
+    return { byDriver, driverMap, totalLaps };
+  } catch (e) {
+    console.warn('Tyre stints fetch failed:', e.message);
+    return null;
+  }
+}
+
+// ───────────────────────────────────────────────
+// Resolve 'current' season → actual year number
+// ───────────────────────────────────────────────
+export async function resolveSeasonYear(season) {
+  if (season !== 'current') return parseInt(season);
+  return new Date().getFullYear();
+}
+
+// ───────────────────────────────────────────────
+// Resolve 'last' round → actual round number for a season
+// ───────────────────────────────────────────────
+export async function resolveRound(season, round) {
+  if (round !== 'last') return parseInt(round);
+  const data = await fetchWithCache(`${JOLPICA_BASE}/${season}/last/results.json`);
+  return parseInt(data?.MRData?.RaceTable?.Races?.[0]?.round ?? 1);
+}

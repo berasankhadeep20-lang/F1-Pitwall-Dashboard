@@ -2,7 +2,7 @@ import React from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import { getFastestLaps, getLastRaceResults, parseLapTime, formatLapTime, getTeamColor } from '../utils/api';
+import { getFastestLaps, getRaceResults, parseLapTime, formatLapTime, getTeamColor } from '../utils/api';
 import { useApp } from '../context/AppContext';
 import { useMultiF1Data } from '../hooks/useF1Data';
 import { LoadingCard, ErrorCard, SectionHeader } from './LoadingCard';
@@ -33,11 +33,12 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 export default function FastestLaps() {
-  const { season } = useApp();
+  const { season, selectedRound } = useApp();
+  const round = selectedRound ?? 'last';
   const { data, loading, error } = useMultiF1Data({
-    fastest: () => getFastestLaps(season, 'last'),
-    race: () => getLastRaceResults(),
-  }, [season], 60_000);
+    fastest: () => getFastestLaps(season, round),
+    race: () => getRaceResults(season, round),
+  }, [season, round], 60_000);
 
   if (loading) return (
     <div className="f1-card p-4">

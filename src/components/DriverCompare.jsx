@@ -3,7 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend
 } from 'recharts';
-import { getLapTimes, getLastRaceResults, parseLapTime, formatLapTime, getTeamColor } from '../utils/api';
+import { getLapTimes, getRaceResults, parseLapTime, formatLapTime, getTeamColor } from '../utils/api';
 import { useApp } from '../context/AppContext';
 import { useMultiF1Data } from '../hooks/useF1Data';
 import { ErrorCard, SectionHeader } from './LoadingCard';
@@ -34,14 +34,15 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function DriverCompare() {
-  const { season } = useApp();
+  const { season, selectedRound } = useApp();
+  const round = selectedRound ?? 'last';
   const [selected, setSelected] = useState([]);
   const [chartType, setChartType] = useState('line'); // 'line' | 'bar'
 
   const { data, loading, error } = useMultiF1Data({
-    laps: () => getLapTimes(season, 'last'),
-    race: () => getLastRaceResults(),
-  }, [season], 120_000);
+    laps: () => getLapTimes(season, round),
+    race: () => getRaceResults(season, round),
+  }, [season, round], 120_000);
 
   const { chartData, allDrivers, stats } = useMemo(() => {
     if (!data.laps?.length) return { chartData: [], allDrivers: [], stats: {} };
