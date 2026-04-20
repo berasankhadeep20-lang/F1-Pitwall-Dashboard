@@ -1,31 +1,37 @@
 # 🏎️ F1 Pitwall Dashboard
 
-A modern, live Formula 1 data dashboard built with React + Vite. Features real-time standings, race results, lap time analysis, and driver comparisons — all powered by free public APIs.
+A modern live Formula 1 data dashboard built with React + Vite. Real-time standings, race results, lap time analysis, and driver comparisons — powered entirely by free public APIs, deployable as a static site.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](./LICENSE.md)
+
+---
 
 ## ✨ Features
 
-- **Driver & Constructor Championship** standings with live updates
-- **Race Results** for the latest race (+ sprint results when applicable)
-- **Fastest Lap** visualization with gap analysis
-- **Championship Progression** chart over the season
-- **Race Position Chart** — track every driver's position lap by lap
-- **Driver Comparison** — compare up to 5 drivers' lap times side by side
-- **Race Calendar** — full season schedule with countdown
-- **Season Selector** — switch between 2022, 2023, 2024, 2025
-- **Welcome screen** with username persistence via localStorage
-- Auto-refresh every 30 seconds
-- Fully responsive (mobile + desktop)
+- **Live Driver & Constructor Championship** standings updated every 30 seconds
+- **Race Results** for the latest race including sprint results when applicable
+- **Fastest Lap** visualization — bar chart and full table with gap analysis
+- **Championship Progression** — track every driver's points across the entire season, toggle individual drivers on/off
+- **Race Position Chart** — lap-by-lap position changes for any driver
+- **Driver Comparison** — compare up to 5 drivers' lap times and stats side by side
+- **Race Calendar** — full season schedule with live countdown badges
+- **Season Selector** — switch between 2022 – current
+- **Welcome screen** with username persistence via `localStorage`
+- Fully responsive — works on mobile and desktop
+- Auto-refresh every 30 seconds with client-side response caching
 
-## 🚀 Getting Started
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
+- Node.js 18 or later
+- npm
 
-### Install & Run Locally
+### Run Locally
 
 ```bash
-git clone https://github.com/berasankhadeep20-lang/f1-pitwall-dashboard
+git clone https://github.com/berasankhadeep20-lang/f1-pitwall-dashboard.git
 cd f1-pitwall-dashboard
 npm install
 npm run dev
@@ -33,135 +39,97 @@ npm run dev
 
 Open [http://localhost:5173/f1-pitwall-dashboard/](http://localhost:5173/f1-pitwall-dashboard/)
 
+---
+
 ## 📦 Deploy to GitHub Pages
 
-### 1. Create a GitHub repository
-Create a new repo called `f1-pitwall-dashboard` on GitHub.
+Deployment is fully automated via GitHub Actions. After the one-time setup below, every push to `main` will build and deploy automatically — no manual commands needed.
 
-### 2. Update vite.config.js base path
-The `base` in `vite.config.js` is already set to `/f1-pitwall-dashboard/`. If your repo has a different name, update it:
+### One-time setup
 
-```js
-// vite.config.js
-export default defineConfig({
-  plugins: [react()],
-  base: '/YOUR-REPO-NAME/',   // ← change this
-})
-```
-
-### 3. Update package.json deploy script (optional)
-If you use gh-pages CLI:
-```bash
-npm install --save-dev gh-pages
-```
-
-Add to package.json scripts:
-```json
-"predeploy": "npm run build",
-"deploy": "gh-pages -d dist"
-```
-
-### 4. Push and deploy
+**Step 1 — Push this repo to your GitHub account**
 
 ```bash
 git init
 git add .
-git commit -m "Initial commit"
+git commit -m "🏎️ Initial commit"
 git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/f1-pitwall-dashboard.git
+git remote add origin https://github.com/berasankhadeep20-lang/f1-pitwall-dashboard.git
 git push -u origin main
-
-# Deploy to GitHub Pages
-npm run deploy
 ```
 
-### 5. Enable GitHub Pages
-Go to your repo → **Settings** → **Pages** → Source: **gh-pages branch** → Save.
+**Step 2 — Enable GitHub Pages**
 
-Your dashboard will be live at:
-`https://YOUR_USERNAME.github.io/f1-pitwall-dashboard/`
+Go to your repo → **Settings → Pages → Source → GitHub Actions** → Save.
 
-### Alternative: GitHub Actions (auto-deploy on push)
+**Step 3 — Update the base path if your repo name differs**
 
-Create `.github/workflows/deploy.yml`:
+Open `vite.config.js` and update:
 
-```yaml
-name: Deploy to GitHub Pages
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm install
-      - run: npm run build
-      - uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+```js
+base: '/your-repo-name/',
 ```
+
+**Step 4 — Push to main (triggers auto-deploy)**
+
+The Actions workflow at `.github/workflows/deploy.yml` runs on every push to `main`. Your site will be live at:
+
+```
+https://berasankhadeep20-lang.github.io/f1-pitwall-dashboard/
+```
+
+---
 
 ## 🌐 APIs Used
 
-| API | Usage | Rate Limit |
-|-----|-------|------------|
-| [Jolpica/Ergast](https://api.jolpi.ca) | Standings, results, schedules | ~4 req/s |
-| [OpenF1](https://openf1.org) | Real-time telemetry (future) | Generous |
+| API | Usage |
+|-----|-------|
+| [Jolpica / Ergast](https://api.jolpi.ca) | Standings, race results, schedules, lap times |
+| [OpenF1](https://openf1.org) | Live telemetry (future expansion) |
 
-All data is cached client-side (30s TTL) to avoid rate limits.
+All responses are cached client-side with a 30 second TTL to stay within rate limits.
+
+---
 
 ## 🛠 Tech Stack
 
-- **React 18** + **Vite 5**
-- **Tailwind CSS** for styling
-- **Recharts** for all charts
-- **Framer Motion** for animations
-- **Lucide React** for icons
-- **JetBrains Mono** + **Titillium Web** fonts
+| Tool | Purpose |
+|------|---------|
+| React 18 + Vite 5 | UI framework and build tool |
+| Tailwind CSS | Utility-first styling |
+| Recharts | All charts and graphs |
+| Framer Motion | Animations |
+| Titillium Web + JetBrains Mono | Typography |
+
+---
 
 ## 📁 Project Structure
 
 ```
-src/
-├── components/
-│   ├── WelcomeModal.jsx      # Name entry screen
-│   ├── Navbar.jsx            # Navigation + season selector
-│   ├── StatsBar.jsx          # Hero stats strip
-│   ├── DriverStandings.jsx   # WDC table
-│   ├── ConstructorStandings.jsx # WCC table with progress bars
-│   ├── RaceResults.jsx       # Last race / sprint results
-│   ├── RaceSchedule.jsx      # Full calendar with countdowns
-│   ├── FastestLaps.jsx       # Fastest lap chart + table
-│   ├── ChampionshipChart.jsx # Points progression line chart
-│   ├── PositionChart.jsx     # Lap-by-lap position changes
-│   ├── DriverCompare.jsx     # Multi-driver comparison
-│   └── LoadingCard.jsx       # Skeleton loaders + error states
-├── pages/
-│   ├── Dashboard.jsx
-│   ├── StandingsPage.jsx
-│   ├── RacesPage.jsx
-│   ├── GraphsPage.jsx
-│   └── ComparePage.jsx
-├── hooks/
-│   └── useF1Data.js          # Polling hooks with auto-refresh
-├── context/
-│   └── AppContext.jsx        # Global state
-├── utils/
-│   └── api.js                # All API calls + caching
-├── App.jsx
-├── main.jsx
-└── index.css
+f1-pitwall-dashboard/
+├── .github/workflows/deploy.yml   ← Auto GitHub Pages deploy
+├── public/favicon.svg
+├── src/
+│   ├── components/                ← UI components
+│   ├── pages/                     ← Page views
+│   ├── hooks/useF1Data.js         ← Polling with auto-refresh
+│   ├── context/AppContext.jsx     ← Global state
+│   ├── utils/api.js               ← All API calls + caching
+│   ├── App.jsx
+│   └── index.css
+├── .gitignore
+├── CHANGELOG.md
+├── LICENSE.md
+├── RELEASE_NOTES.md
+└── package.json
 ```
-
-## 📝 License
-
-MIT — free to use, fork, and deploy.
 
 ---
 
-Built with ❤️ for F1 fans. Not affiliated with Formula 1 or the FIA.
+## 📝 License
+
+MIT — see [LICENSE.md](./LICENSE.md)
+
+---
+
+*Not affiliated with Formula 1, the FIA, or any F1 team.*

@@ -12,11 +12,14 @@ const TABS = [
 
 export default function Navbar({ lastUpdated }) {
   const { username, setUsername, season, setSeason, activeTab, setActiveTab } = useApp();
-  const [seasons, setSeasons] = useState(['current', '2024', '2023', '2022']);
+  const [seasons, setSeasons] = useState(['current', '2025', '2024', '2023', '2022']);
   const [now, setNow] = useState(new Date());
+  const currentYear = new Date().getFullYear().toString(); // 2026
 
   useEffect(() => {
-    getSeasonsList().then(s => setSeasons(['current', ...s.filter(x => x !== new Date().getFullYear().toString())])).catch(() => {});
+    getSeasonsList()
+      .then(s => setSeasons(['current', ...s.filter(x => x !== currentYear)]))
+      .catch(() => {});
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
@@ -66,7 +69,7 @@ export default function Navbar({ lastUpdated }) {
               className="bg-f1card border border-f1border text-white text-sm font-mono px-2 py-1 rounded focus:outline-none focus:border-f1red cursor-pointer"
             >
               {seasons.map(s => (
-                <option key={s} value={s}>{s === 'current' ? '2025 ▾' : s}</option>
+                <option key={s} value={s}>{s === 'current' ? `${currentYear} ▾` : s}</option>
               ))}
             </select>
 

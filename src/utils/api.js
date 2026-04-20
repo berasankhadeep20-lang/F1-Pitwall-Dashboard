@@ -127,7 +127,7 @@ export async function getStandingsProgression(season = 'current') {
       progression.push({
         round: parseInt(race.round),
         raceName: race.raceName,
-        standings: standings.slice(0, 10).map(s => ({
+        standings: standings.map(s => ({   // removed .slice(0, 10) — show all drivers
           driver: s.Driver.code || s.Driver.familyName.substring(0, 3).toUpperCase(),
           points: parseInt(s.points),
           position: parseInt(s.position),
@@ -145,10 +145,15 @@ export async function getStandingsProgression(season = 'current') {
 // ───────────────────────────────────────────────
 export async function getSeasonsList() {
   const data = await fetchWithCache(`${JOLPICA_BASE}/seasons.json?limit=10&offset=65`, 3_600_000);
-  return (data?.MRData?.SeasonTable?.Seasons ?? [])
+  const fromApi = (data?.MRData?.SeasonTable?.Seasons ?? [])
     .map(s => s.season)
     .reverse()
     .slice(0, 8);
+
+  // Ensure current year is always included even if API is behind
+  const currentYear = new Date().getFullYear().toString();
+  if (!fromApi.includes(currentYear)) fromApi.unshift(currentYear);
+  return fromApi;
 }
 
 // ───────────────────────────────────────────────
