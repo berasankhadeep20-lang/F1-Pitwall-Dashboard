@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getSessionsForMeeting, getSessionWeather, normaliseSessionName } from '../utils/openf1';
+import { getSessionsForMeeting, getSessionWeather, normaliseSessionName, openf1Supported } from '../utils/openf1';
 import { getRaceResults } from '../utils/api';
 import { useApp } from '../context/AppContext';
 import { SectionHeader } from './LoadingCard';
@@ -22,7 +22,7 @@ export default function WeatherWidget() {
         if (!raceData) return;
         setRaceName(raceData.raceName ?? '');
         const year = season === 'current' ? new Date().getFullYear() : parseInt(season);
-        if (year < 2023) return; // OpenF1 only 2023+
+        if (!openf1Supported(year)) return;
         const meeting = await getSessionsForMeeting(year, raceData.Circuit?.circuitId ?? '');
         const raceSession = meeting?.sessions?.find(s => normaliseSessionName(s.session_name) === 'race');
         if (!raceSession?.session_key) return;

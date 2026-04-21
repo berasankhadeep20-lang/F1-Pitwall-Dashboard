@@ -216,7 +216,7 @@ export async function getTyreStrategy(season = 'current', round = 'last') {
 
     // Try OpenF1 for real compound data (2023+)
     let openf1 = null;
-    if (year >= 2023) {
+    if (year >= 2023 && year <= 2025) { // OpenF1 only covers 2023-2025
       try {
         const meeting = await getSessionsForMeeting(year, circuitId);
         const raceSession = meeting?.sessions?.find(s => normaliseSessionName(s.session_name) === 'race');
@@ -322,17 +322,17 @@ export function formatLapTime(s) {
 // ── Driver career stats ────────────────────────────────────
 export async function getDriverCareer(driverId) {
   try {
-    const [res, champ] = await Promise.all([
+    // Fetch both independently — new drivers may 400 on standings
+    const [res, champ] = await Promise.allSettled([
       get(`${BASE}/drivers/${driverId}/results.json?limit=1`, 3_600_000),
       get(`${BASE}/drivers/${driverId}/driverStandings.json?limit=100`, 3_600_000),
     ]);
-    const totalRaces = parseInt(res?.MRData?.total ?? 0);
-    const lists = champ?.MRData?.StandingsTable?.StandingsLists ?? [];
+    const totalRaces = parseInt(res.value?.MRData?.total ?? 0);
+    const lists = champ.value?.MRData?.StandingsTable?.StandingsLists ?? [];
     const championships = lists.filter(l => l.DriverStandings?.[0]?.position === '1').length;
     const wins = lists.reduce((a, l) => a + parseInt(l.DriverStandings?.[0]?.wins ?? 0), 0);
-    const seasons = lists.map(l => l.season);
-    return { totalRaces, championships, wins, seasons };
-  } catch { return null; }
+    return { totalRaces, championships, wins };
+  } catch { return { totalRaces: 0, championships: 0, wins: 0 }; }
 }
 
 // ── Circuit history: past winners ─────────────────────────

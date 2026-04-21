@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getRaceSchedule } from '../utils/api';
-import { getSessionsForMeeting, normaliseSessionName } from '../utils/openf1';
+import { getSessionsForMeeting, normaliseSessionName, openf1Supported } from '../utils/openf1';
 import { useApp, SESSION_LABELS } from '../context/AppContext';
 
 const FLAG_MAP = {
@@ -52,7 +52,7 @@ export default function RaceSelector() {
     setLoadingSessions(true);
     setWeekendSessions(null);
 
-    getSessionsForMeeting(year, circuitId)
+    (openf1Supported(year) ? getSessionsForMeeting(year, circuitId) : Promise.resolve(null))
       .then(result => {
         if (!result?.sessions?.length) {
           // Fallback: basic sessions (no practice data)
