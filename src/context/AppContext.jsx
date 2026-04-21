@@ -21,10 +21,14 @@ export function AppProvider({ children }) {
   // OpenF1 sessions list for the selected race weekend (null = not loaded yet)
   const [weekendSessions, setWeekendSessions] = useState(null);
   const [activeTab, setActiveTab]         = useState('dashboard');
+  const [favouriteDriver, setFavouriteDriver] = useState(() => localStorage.getItem('f1_fav') || null);
 
   useEffect(() => {
     if (username) localStorage.setItem('f1_username', username);
   }, [username]);
+  useEffect(() => {
+    if (favouriteDriver) localStorage.setItem('f1_fav', favouriteDriver);
+  }, [favouriteDriver]);
 
   useEffect(() => {
     setSelectedRound('last');
@@ -45,6 +49,7 @@ export function AppProvider({ children }) {
       selectedSession, setSelectedSession,
       weekendSessions, setWeekendSessions,
       activeTab, setActiveTab,
+      favouriteDriver, setFavouriteDriver,
     }}>
       {children}
     </AppContext.Provider>

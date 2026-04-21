@@ -70,7 +70,12 @@ export async function getRealTyreStints(sessionKey) {
         stintNum: s.stint_number ?? 1,
         lapStart: s.lap_start ?? 1,
         lapEnd: s.lap_end ?? null,
-        compound: ((s.compound ?? s.tyre_compound ?? 'UNKNOWN')).toUpperCase(),
+        compound: (() => {
+          const raw = (s.compound ?? s.tyre_compound ?? 'UNKNOWN').toUpperCase();
+          if (raw.startsWith('INTER')) return 'INTERMEDIATE';
+          if (raw === 'WET' || raw === 'FULL_WET') return 'WET';
+          return raw; // SOFT, MEDIUM, HARD, UNKNOWN
+        })(),
         tyreAge: s.tyre_age_at_start ?? 0,
       });
     });

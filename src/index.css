@@ -93,3 +93,22 @@ body {
 .pos-1 { background: #FFD700; color: #000; }
 .pos-2 { background: #C0C0C0; color: #000; }
 .pos-3 { background: #CD7F32; color: #000; }
+
+/* ── Light mode ───────────────────────────────────────────── */
+.light-mode {
+  --f1-bg: #F5F5F5;
+  --f1-card: #FFFFFF;
+  --f1-border: #E0E0E0;
+  --f1-text: #111111;
+  --f1-muted: #666666;
+}
+.light-mode body { background-color: #F5F5F5; color: #111111; }
+.light-mode .f1-card { background: #FFFFFF; border-color: #E0E0E0; }
+.light-mode .shimmer { background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; }
+.light-mode .text-white { color: #111111 !important; }
+.light-mode .text-f1muted { color: #666666 !important; }
+.light-mode .bg-f1dark { background-color: #F5F5F5; }
+.light-mode .bg-f1card { background-color: #FFFFFF; }
+.light-mode .border-f1border { border-color: #E0E0E0; }
+.light-mode .bg-f1border\/30, .light-mode .bg-f1border\/20 { background-color: rgba(0,0,0,0.05); }
+.light-mode header { background-color: rgba(245,245,245,0.95) !important; border-color: #E0E0E0; }

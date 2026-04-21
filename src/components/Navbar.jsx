@@ -1,3 +1,4 @@
+import ThemeToggle from './ThemeToggle';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { getSeasonsList } from '../utils/api';
@@ -8,6 +9,9 @@ const TABS = [
   { id: 'races', label: 'Races' },
   { id: 'graphs', label: 'Analysis' },
   { id: 'compare', label: 'Compare' },
+  { id: 'drivers', label: 'Drivers' },
+  { id: 'teams', label: 'Teams' },
+  { id: 'circuits', label: 'Circuits' },
 ];
 
 export default function Navbar({ lastUpdated }) {
@@ -77,6 +81,7 @@ export default function Navbar({ lastUpdated }) {
               <span className="text-white text-sm font-display">{username}</span>
             </div>
 
+            <ThemeToggle />
             <button
               onClick={() => { localStorage.removeItem('f1_username'); setUsername(''); }}
               className="text-f1muted hover:text-f1red text-xs font-mono transition-colors"

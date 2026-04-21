@@ -318,3 +318,48 @@ export function formatLapTime(s) {
   if (!s || s <= 0) return 'N/A';
   return `${Math.floor(s / 60)}:${(s % 60).toFixed(3).padStart(6, '0')}`;
 }
+
+// ── Driver career stats ────────────────────────────────────
+export async function getDriverCareer(driverId) {
+  try {
+    const [res, champ] = await Promise.all([
+      get(`${BASE}/drivers/${driverId}/results.json?limit=1`, 3_600_000),
+      get(`${BASE}/drivers/${driverId}/driverStandings.json?limit=100`, 3_600_000),
+    ]);
+    const totalRaces = parseInt(res?.MRData?.total ?? 0);
+    const lists = champ?.MRData?.StandingsTable?.StandingsLists ?? [];
+    const championships = lists.filter(l => l.DriverStandings?.[0]?.position === '1').length;
+    const wins = lists.reduce((a, l) => a + parseInt(l.DriverStandings?.[0]?.wins ?? 0), 0);
+    const seasons = lists.map(l => l.season);
+    return { totalRaces, championships, wins, seasons };
+  } catch { return null; }
+}
+
+// ── Circuit history: past winners ─────────────────────────
+export async function getCircuitHistory(circuitId, limit = 10) {
+  try {
+    const d = await get(`${BASE}/circuits/${circuitId}/results/1.json?limit=${limit}`, 3_600_000);
+    return d?.MRData?.RaceTable?.Races ?? [];
+  } catch { return []; }
+}
+
+// ── WDC mathematical elimination check ────────────────────
+export async function getChampionshipMath(season = 'current') {
+  const [standings, schedule] = await Promise.all([
+    getDriverStandings(season),
+    getRaceSchedule(season),
+  ]);
+  const remaining = schedule.filter(r => new Date(r.date) > new Date()).length;
+  const maxPointsPerRace = 26; // 25 + 1 fastest lap
+  const maxRemaining = remaining * maxPointsPerRace;
+  const leader = parseInt(standings[0]?.points ?? 0);
+  return standings.map(s => ({
+    code: s.Driver?.code || s.Driver?.familyName?.slice(0, 3).toUpperCase(),
+    name: `${s.Driver?.givenName} ${s.Driver?.familyName}`,
+    points: parseInt(s.points),
+    maxPossible: parseInt(s.points) + maxRemaining,
+    canWin: parseInt(s.points) + maxRemaining >= leader,
+    gap: leader - parseInt(s.points),
+    teamColor: getTeamColor(s.Constructors?.[0]?.name ?? ''),
+  }));
+}
