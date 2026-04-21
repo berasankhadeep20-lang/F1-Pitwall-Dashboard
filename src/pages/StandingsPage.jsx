@@ -1,9 +1,10 @@
 import React from 'react';
-import DriverStandings from '../components/DriverStandings';
+import DriverForm from '../components/DriverForm';
 import ConstructorStandings from '../components/ConstructorStandings';
 import ChampionshipChart from '../components/ChampionshipChart';
 import PointsGap from '../components/PointsGap';
 import ReliabilityTracker from '../components/ReliabilityTracker';
+import TeammateComparison from '../components/TeammateComparison';
 
 export default function StandingsPage() {
   return (
@@ -14,8 +15,11 @@ export default function StandingsPage() {
         <ReliabilityTracker />
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <DriverStandings />
-        <ConstructorStandings />
+        <DriverForm />
+        <div className="space-y-4">
+          <ConstructorStandings />
+          <TeammateComparison />
+        </div>
       </div>
     </div>
   );

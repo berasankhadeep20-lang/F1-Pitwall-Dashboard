@@ -5,6 +5,7 @@ import PointsGap from '../components/PointsGap';
 import PositionChart from '../components/PositionChart';
 import FastestLaps from '../components/FastestLaps';
 import PitStopAnalysis from '../components/PitStopAnalysis';
+import WeatherWidget from '../components/WeatherWidget';
 
 export default function GraphsPage() {
   return (
@@ -12,7 +13,10 @@ export default function GraphsPage() {
       <RaceSelector />
       <ChampionshipChart />
       <PointsGap />
-      <PositionChart />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <PositionChart />
+        <WeatherWidget />
+      </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <FastestLaps />
         <PitStopAnalysis />

@@ -6,6 +6,7 @@ import QualifyingResults from '../components/QualifyingResults';
 import FastestLaps from '../components/FastestLaps';
 import TyreStrategy from '../components/TyreStrategy';
 import PitStopAnalysis from '../components/PitStopAnalysis';
+import WeatherWidget from '../components/WeatherWidget';
 
 export default function RacesPage() {
   return (
@@ -15,7 +16,7 @@ export default function RacesPage() {
         <RaceSchedule />
         <div className="space-y-4">
           <RaceResults />
-          <QualifyingResults />
+          <WeatherWidget />
         </div>
       </div>
       <TyreStrategy />

@@ -1,12 +1,12 @@
 import React from 'react';
 import RaceSelector from '../components/RaceSelector';
 import StatsBar from '../components/StatsBar';
-import DriverStandings from '../components/DriverStandings';
+import DriverForm from '../components/DriverForm';
 import ConstructorStandings from '../components/ConstructorStandings';
 import RaceResults from '../components/RaceResults';
 import ChampionshipChart from '../components/ChampionshipChart';
-import PointsGap from '../components/PointsGap';
 import PositionChart from '../components/PositionChart';
+import WeatherWidget from '../components/WeatherWidget';
 
 export default function Dashboard() {
   return (
@@ -15,14 +15,16 @@ export default function Dashboard() {
       <RaceSelector />
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="xl:col-span-2"><RaceResults /></div>
-        <div><ConstructorStandings /></div>
+        <div className="space-y-4">
+          <WeatherWidget />
+          <ConstructorStandings />
+        </div>
       </div>
+      <ChampionshipChart />
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <ChampionshipChart />
-        <PointsGap />
+        <PositionChart />
+        <DriverForm />
       </div>
-      <PositionChart />
-      <DriverStandings />
     </div>
   );
 }

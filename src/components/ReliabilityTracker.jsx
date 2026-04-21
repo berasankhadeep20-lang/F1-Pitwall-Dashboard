@@ -48,11 +48,11 @@ export default function ReliabilityTracker() {
         </BarChart>
       </ResponsiveContainer>
 
-      {Object.keys(data.retirementReasons).length > 0 && (
+      {Object.keys(data.retirements ?? {}).length > 0 && (
         <div className="mt-4 pt-4 border-t border-f1border">
           <p className="text-f1muted font-mono text-xs uppercase tracking-widest mb-3">Retirement Log</p>
           <div className="space-y-1 max-h-40 overflow-y-auto">
-            {Object.entries(data.retirementReasons).map(([driver, retirements]) =>
+            {Object.entries(data.retirements ?? {}).map(([driver, retirements]) =>
               retirements.map((r,i) => (
                 <div key={`${driver}-${i}`} className="flex items-center justify-between text-xs font-mono py-1 border-b border-f1border/30">
                   <span className="text-white font-bold w-10">{driver}</span>
