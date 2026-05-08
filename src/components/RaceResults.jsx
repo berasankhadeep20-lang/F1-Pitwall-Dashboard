@@ -3,10 +3,15 @@ import {
   getRaceResults, getQualifyingResults, getSprintResults,
   getFastestLaps, getTeamColor, formatLapTime
 } from '../utils/api';
-import { getSessionResults } from '../utils/openf1';
+import {
+  getSessionResults, getSessionsForMeeting,
+  normaliseSessionName, isRaceSessionLive, getLatestSession,
+  openf1Supported,
+} from '../utils/openf1';
 import { useApp } from '../context/AppContext';
 import { useMultiF1Data } from '../hooks/useF1Data';
 import { LoadingCard, ErrorCard, SectionHeader } from './LoadingCard';
+import LiveRaceView from './LiveRaceView';
 
 function TimeDiff({ time, status }) {
   if (status && status !== 'Finished') return <span className="text-f1muted text-xs font-mono">{status}</span>;
@@ -64,7 +69,7 @@ function QualiTable({ results }) {
           <th className="text-left text-f1muted font-mono text-xs uppercase px-4 py-2">Driver</th>
           <th className="text-right text-f1muted font-mono text-xs uppercase px-4 py-2 hidden sm:table-cell">Q1</th>
           <th className="text-right text-f1muted font-mono text-xs uppercase px-4 py-2 hidden md:table-cell">Q2</th>
-          <th className="text-right text-f1muted font-mono text-xs uppercase px-4 py-2">Best</th>
+          <th className="text-right text-f1muted font-mono text-xs uppercase px-4 py-2">Q3</th>
         </tr></thead>
         <tbody>
           {results.map((r, i) => (
@@ -92,7 +97,6 @@ function QualiTable({ results }) {
   );
 }
 
-// Practice session results from OpenF1 — shows real driver names
 function PracticeTable({ sessionKey }) {
   const [rows, setRows]     = useState(null);
   const [loading, setLoading] = useState(true);
@@ -108,7 +112,6 @@ function PracticeTable({ sessionKey }) {
   if (!sessionKey) return (
     <div className="p-8 text-center">
       <p className="text-f1muted font-mono text-sm">Practice data available for 2023+ via OpenF1</p>
-      <p className="text-f1muted/50 font-mono text-xs mt-1">Select a 2023 or later race to view practice times</p>
     </div>
   );
   if (loading) return <div className="p-6"><div className="h-48 shimmer rounded"/></div>;
@@ -156,6 +159,38 @@ export default function RaceResults() {
   const { season, selectedRound, selectedSession, weekendSessions } = useApp();
   const round = selectedRound ?? 'last';
 
+  // ── Live race detection ──────────────────────────────────
+  const [liveSession, setLiveSession]   = useState(null);
+  const [liveChecked, setLiveChecked]   = useState(false);
+
+  useEffect(() => {
+    // Only check on the Race tab — no need to poll during quali/fp views
+    if (selectedSession !== 'race') { setLiveChecked(true); return; }
+
+    let cancelled = false;
+    async function check() {
+      try {
+        const live = await isRaceSessionLive();
+        if (cancelled) return;
+        if (live) {
+          const session = await getLatestSession();
+          if (!cancelled) setLiveSession(session);
+        } else {
+          setLiveSession(null);
+        }
+      } catch {
+        setLiveSession(null);
+      } finally {
+        if (!cancelled) setLiveChecked(true);
+      }
+    }
+    check();
+    // Re-check every 2 minutes (race could start while user has tab open)
+    const t = setInterval(check, 120_000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [selectedSession]);
+
+  // ── Normal Jolpica data ──────────────────────────────────
   const { data, loading, error } = useMultiF1Data({
     race:    () => getRaceResults(season, round),
     quali:   () => getQualifyingResults(season, round),
@@ -163,15 +198,25 @@ export default function RaceResults() {
     fastest: () => getFastestLaps(season, round),
   }, [season, round], 60_000);
 
-  if (loading) return <LoadingCard rows={10}/>;
-  if (error)   return <ErrorCard message={error}/>;
+  // ── Render logic ─────────────────────────────────────────
+  if (!liveChecked || loading) return <LoadingCard rows={10}/>;
+  if (error) return <ErrorCard message={error}/>;
 
-  const fastestId = data.fastest?.[0]?.Driver?.driverId;
+  const fastestId  = data.fastest?.[0]?.Driver?.driverId;
   const displayRace = data.race ?? data.quali;
   const isPractice = ['fp1','fp2','fp3'].includes(selectedSession);
   const isSprint   = ['sprint','sq'].includes(selectedSession);
   const currentSessionMeta = weekendSessions?.find(s => s.id === selectedSession);
 
+  // ── Show live race view when: race tab + no Jolpica results yet + OpenF1 says live ──
+  const raceHasNoResults = selectedSession === 'race' && !data.race?.Results?.length;
+  if (raceHasNoResults && liveSession) {
+    // Derive total laps from race schedule if available (Jolpica doesn't give it pre-race)
+    // Leave as undefined — LiveRaceView handles gracefully
+    return <LiveRaceView session={liveSession} totalLaps={undefined} />;
+  }
+
+  // ── Build normal session content ─────────────────────────
   let title = 'Race';
   let content = null;
 
@@ -190,9 +235,20 @@ export default function RaceResults() {
       : <div className="p-8 text-center text-f1muted font-mono text-sm">No sprint data for this race</div>;
   } else {
     title = 'Race';
-    content = data.race?.Results?.length
-      ? <RaceTable results={data.race.Results} fastestId={fastestId}/>
-      : <div className="p-8 text-center text-f1muted font-mono text-sm">No race results yet</div>;
+    if (data.race?.Results?.length) {
+      content = <RaceTable results={data.race.Results} fastestId={fastestId}/>;
+    } else if (raceHasNoResults && !liveSession) {
+      // Race session exists but not live — results probably uploading to Jolpica (~30 min lag)
+      content = (
+        <div className="p-8 text-center">
+          <p className="text-2xl mb-2">⏳</p>
+          <p className="text-white font-display font-semibold">Results processing…</p>
+          <p className="text-f1muted font-mono text-xs mt-1">Jolpica typically updates 20–30 min after the chequered flag</p>
+        </div>
+      );
+    } else {
+      content = <div className="p-8 text-center text-f1muted font-mono text-sm">No race results yet</div>;
+    }
   }
 
   return (
