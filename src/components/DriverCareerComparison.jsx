@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { getDriverStandings, getTeamColor } from '../utils/api';
 import { useApp } from '../context/AppContext';
 import { useF1Data } from '../hooks/useF1Data';
-import { SectionHeader, CardLoader } from './LoadingCard';
+import { SectionHeader, LoadingCard } from './LoadingCard';
 
 const BASE_URL = 'https://api.jolpi.ca/ergast/f1';
 const cache = new Map();
@@ -41,7 +41,7 @@ export default function DriverCareerComparison() {
     Promise.all([fetchCareer(d1),fetchCareer(d2)]).then(([a,b])=>{ setC1(a); setC2(b); }).finally(()=>setLoading2(false));
   },[d1,d2]);
 
-  if (loading) return <CardLoader rows={6}/>;
+  if (loading) return <LoadingCard rows={6}/>;
 
   const allSeasons=[...new Set([...(c1??[]).map(s=>s.season),...(c2??[]).map(s=>s.season)])].sort((a,b)=>a-b);
   const chartData=allSeasons.map(yr=>({ season:yr, [d1]:c1?.find(s=>s.season===yr)?.[view]??null, [d2]:c2?.find(s=>s.season===yr)?.[view]??null }));

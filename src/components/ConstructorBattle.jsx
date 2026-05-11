@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { getConstructorStandings, getTeamColor } from '../utils/api';
 import { useApp } from '../context/AppContext';
 import { useF1Data } from '../hooks/useF1Data';
-import { SectionHeader, CardLoader, ErrorCard } from './LoadingCard';
+import { SectionHeader, LoadingCard, ErrorCard } from './LoadingCard';
 
 export default function ConstructorBattle() {
   const { season } = useApp();
@@ -34,7 +34,7 @@ export default function ConstructorBattle() {
     });
   },[constructors,teamA,teamB]);
 
-  if (loading) return <CardLoader rows={5}/>;
+  if (loading) return <LoadingCard rows={5}/>;
   if (error) return <ErrorCard message={error}/>;
 
   const aTeam=constructors.find(c=>c.Constructor?.constructorId===teamA);

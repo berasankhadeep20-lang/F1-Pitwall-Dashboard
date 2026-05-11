@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { getDriverStandings, getTeamColor } from '../utils/api';
 import { useApp } from '../context/AppContext';
 import { useF1Data } from '../hooks/useF1Data';
-import { SectionHeader, CardLoader } from './LoadingCard';
+import { SectionHeader, LoadingCard } from './LoadingCard';
 
 const BASE_URL = 'https://api.jolpi.ca/ergast/f1';
 const cache = new Map();
@@ -55,7 +55,7 @@ export default function StreakTracker() {
     return result;
   },[raceResults,standings]);
 
-  if (loading||!raceResults) return <CardLoader rows={8}/>;
+  if (loading||!raceResults) return <LoadingCard rows={8}/>;
 
   const maxWin=Math.max(1,...Object.values(streaks).map(s=>s.winStreak));
   const maxPod=Math.max(1,...Object.values(streaks).map(s=>s.podiumStreak));
