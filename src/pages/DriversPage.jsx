@@ -3,6 +3,7 @@ import DriverProfile from '../components/DriverProfile';
 import DriverForm from '../components/DriverForm';
 import TeammateComparison from '../components/TeammateComparison';
 import ChampionshipMath from '../components/ChampionshipMath';
+import DriverCareerComparison from '../components/DriverCareerComparison';
 
 export default function DriversPage() {
   return (
@@ -14,6 +15,7 @@ export default function DriversPage() {
           <TeammateComparison />
         </div>
       </div>
+      <DriverCareerComparison />
       <DriverForm />
     </div>
   );

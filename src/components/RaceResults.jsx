@@ -4,9 +4,8 @@ import {
   getFastestLaps, getTeamColor, formatLapTime
 } from '../utils/api';
 import {
-  getSessionResults, getSessionsForMeeting,
-  normaliseSessionName, isRaceSessionLive, getLatestSession,
-  openf1Supported,
+  getSessionResults, getSessionsForMeeting, normaliseSessionName,
+  isRaceSessionLive, getLatestSession, openf1Supported,
 } from '../utils/openf1';
 import { useApp } from '../context/AppContext';
 import { useMultiF1Data } from '../hooks/useF1Data';
@@ -98,9 +97,8 @@ function QualiTable({ results }) {
 }
 
 function PracticeTable({ sessionKey }) {
-  const [rows, setRows]     = useState(null);
+  const [rows, setRows] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (!sessionKey) { setLoading(false); return; }
     setLoading(true);
@@ -109,11 +107,7 @@ function PracticeTable({ sessionKey }) {
       .catch(() => { setRows([]); setLoading(false); });
   }, [sessionKey]);
 
-  if (!sessionKey) return (
-    <div className="p-8 text-center">
-      <p className="text-f1muted font-mono text-sm">Practice data available for 2023+ via OpenF1</p>
-    </div>
-  );
+  if (!sessionKey) return <div className="p-8 text-center"><p className="text-f1muted font-mono text-sm">Practice data available for 2023+ via OpenF1</p></div>;
   if (loading) return <div className="p-6"><div className="h-48 shimmer rounded"/></div>;
   if (!rows?.length) return <div className="p-8 text-center text-f1muted font-mono text-sm">No lap data for this session</div>;
 
@@ -129,9 +123,7 @@ function PracticeTable({ sessionKey }) {
         <tbody>
           {rows.map((r, i) => (
             <tr key={r.driverNum} className="border-b border-f1border/50 hover:bg-f1border/20 transition-colors">
-              <td className="px-4 py-2.5">
-                <span className={`number-font font-bold text-sm ${i===0?'text-f1gold':i===1?'text-f1silver':i===2?'text-f1bronze':'text-f1muted'}`}>P{r.pos}</span>
-              </td>
+              <td className="px-4 py-2.5"><span className={`number-font font-bold text-sm ${i===0?'text-f1gold':i===1?'text-f1silver':i===2?'text-f1bronze':'text-f1muted'}`}>P{r.pos}</span></td>
               <td className="px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <div className="w-0.5 h-7 rounded-full" style={{background: r.teamColour}}/>
@@ -141,12 +133,8 @@ function PracticeTable({ sessionKey }) {
                   </div>
                 </div>
               </td>
-              <td className="px-4 py-2.5 text-right">
-                <span className={`number-font text-xs font-bold ${i===0?'text-f1red':'text-white'}`}>{formatLapTime(r.bestLap)}</span>
-              </td>
-              <td className="px-4 py-2.5 text-right">
-                <span className="number-font text-f1muted text-xs">{i===0?'—':`+${r.gap.toFixed(3)}s`}</span>
-              </td>
+              <td className="px-4 py-2.5 text-right"><span className={`number-font text-xs font-bold ${i===0?'text-f1red':'text-white'}`}>{formatLapTime(r.bestLap)}</span></td>
+              <td className="px-4 py-2.5 text-right"><span className="number-font text-f1muted text-xs">{i===0?'—':`+${r.gap.toFixed(3)}s`}</span></td>
             </tr>
           ))}
         </tbody>
@@ -159,38 +147,30 @@ export default function RaceResults() {
   const { season, selectedRound, selectedSession, weekendSessions } = useApp();
   const round = selectedRound ?? 'last';
 
-  // ── Live race detection ──────────────────────────────────
-  const [liveSession, setLiveSession]   = useState(null);
-  const [liveChecked, setLiveChecked]   = useState(false);
+  const [liveSession, setLiveSession] = useState(null);
+  const [liveChecked, setLiveChecked] = useState(false);
 
   useEffect(() => {
-    // Only check on the Race tab — no need to poll during quali/fp views
     if (selectedSession !== 'race') { setLiveChecked(true); return; }
-
     let cancelled = false;
     async function check() {
       try {
         const live = await isRaceSessionLive();
         if (cancelled) return;
         if (live) {
-          const session = await getLatestSession();
-          if (!cancelled) setLiveSession(session);
+          const s = await getLatestSession();
+          if (!cancelled) setLiveSession(s);
         } else {
           setLiveSession(null);
         }
-      } catch {
-        setLiveSession(null);
-      } finally {
-        if (!cancelled) setLiveChecked(true);
-      }
+      } catch { setLiveSession(null); }
+      finally { if (!cancelled) setLiveChecked(true); }
     }
     check();
-    // Re-check every 2 minutes (race could start while user has tab open)
     const t = setInterval(check, 120_000);
     return () => { cancelled = true; clearInterval(t); };
   }, [selectedSession]);
 
-  // ── Normal Jolpica data ──────────────────────────────────
   const { data, loading, error } = useMultiF1Data({
     race:    () => getRaceResults(season, round),
     quali:   () => getQualifyingResults(season, round),
@@ -198,27 +178,21 @@ export default function RaceResults() {
     fastest: () => getFastestLaps(season, round),
   }, [season, round], 60_000);
 
-  // ── Render logic ─────────────────────────────────────────
   if (!liveChecked || loading) return <LoadingCard rows={10}/>;
   if (error) return <ErrorCard message={error}/>;
 
-  const fastestId  = data.fastest?.[0]?.Driver?.driverId;
+  const fastestId = data.fastest?.[0]?.Driver?.driverId;
   const displayRace = data.race ?? data.quali;
   const isPractice = ['fp1','fp2','fp3'].includes(selectedSession);
   const isSprint   = ['sprint','sq'].includes(selectedSession);
   const currentSessionMeta = weekendSessions?.find(s => s.id === selectedSession);
-
-  // ── Show live race view when: race tab + no Jolpica results yet + OpenF1 says live ──
   const raceHasNoResults = selectedSession === 'race' && !data.race?.Results?.length;
+
   if (raceHasNoResults && liveSession) {
-    // Derive total laps from race schedule if available (Jolpica doesn't give it pre-race)
-    // Leave as undefined — LiveRaceView handles gracefully
-    return <LiveRaceView session={liveSession} totalLaps={undefined} />;
+    return <LiveRaceView session={liveSession} totalLaps={undefined}/>;
   }
 
-  // ── Build normal session content ─────────────────────────
-  let title = 'Race';
-  let content = null;
+  let title = 'Race', content = null;
 
   if (isPractice) {
     title = currentSessionMeta?.label ?? selectedSession.toUpperCase();
@@ -238,7 +212,6 @@ export default function RaceResults() {
     if (data.race?.Results?.length) {
       content = <RaceTable results={data.race.Results} fastestId={fastestId}/>;
     } else if (raceHasNoResults && !liveSession) {
-      // Race session exists but not live — results probably uploading to Jolpica (~30 min lag)
       content = (
         <div className="p-8 text-center">
           <p className="text-2xl mb-2">⏳</p>
